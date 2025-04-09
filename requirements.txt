@@ -1,0 +1,11 @@
+torch
+torchaudio
+librosa
+matplotlib
+numpy
+pretty_midi
+scipy
+textgrid
+tqdm
+parselmouth
+pyworld

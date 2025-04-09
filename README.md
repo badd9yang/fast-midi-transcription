@@ -72,9 +72,9 @@ transcriber_coarse = MidiTrans(sample_rate=44100, hop_length=882, f0_type='pm')
 
 This tool references and utilizes the following open-source projects:
 
-- **ROSVOT**
+- **ROSVOT** [https://github.com/RickyL-2000/ROSVOT]
 - **VOCANO**
-
+- **Pseudo-Label Transfer from Frame-level to Note-level in a Teacher-student Framework for Singing Transcription from Polyphonic Music**[https://github.com/keums/icassp2022-vocal-transcription]
 ## License
 
 Copyright © YangChen, 2025/4/9

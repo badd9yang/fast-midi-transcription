@@ -6,7 +6,7 @@ This tool provides fast MIDI transcription specifically designed for singing voi
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-repo/fast-midi-transcription.git
+git clone https://github.com/badd9yang/fast-midi-transcription.git
 cd fast-midi-transcription
 
 # Install dependencies

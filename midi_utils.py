@@ -1,4 +1,4 @@
-
+# adapted from https://github.com/keums/icassp2022-vocal-transcription
 import librosa
 import numpy as np
 from librosa.feature.rhythm import tempo

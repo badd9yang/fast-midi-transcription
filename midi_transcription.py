@@ -411,6 +411,10 @@ class MidiTrans:
     def _adjust_note_boundaries(self, pitches, durations, phone_duration, ph_start_idx, ph_end_idx):
         """
         Adjust note boundaries to match phoneme durations and handle fragmented notes.
+        Handles three cases:
+        1. Multi-phoneme (consonant+vowel) where consonant needs longer duration
+        2. Short notes in the middle (from pitch fluctuations/ornaments)
+        3. Short trailing notes (from segmentation errors)
         
         Args:
             pitches: List of MIDI pitch values
@@ -427,7 +431,7 @@ class MidiTrans:
         first_ph_dur = ph_dur_i[0]  # Duration of first phoneme (typically consonant)
         first_note_dur = durations[0]  # Duration of first note
 
-        # Handle multi-phoneme case (consonant+vowel) where consonant needs longer duration
+        # Case 1: Handle multi-phoneme (consonant+vowel) where consonant needs longer duration
         if len(ph_dur_i) > 1 and first_ph_dur > first_note_dur:
             j = 0
             while j < len(durations) - 1:
@@ -451,18 +455,24 @@ class MidiTrans:
                     durations[j] = first_ph_dur
                     break
         
-        # Handle single-phoneme case (vowel only) with potential pitch fluctuations/ornaments
+        # Case 2: Handle short notes in the middle (from pitch fluctuations/ornaments)
         min_note_duration = 0.1 / self.frame_rate  # Merge notes shorter than 100ms
         i = 0
         while i < len(durations) - 1:
             if durations[i] < min_note_duration:
-                # Merge short note into next note
+                # Prefer merging forward (into next note) to maintain alignment
                 durations[i + 1] += durations[i]
                 pitches.pop(i)
                 durations.pop(i)
             else:
                 i += 1
         
+        # Case 3: Handle short trailing notes (from segmentation errors)
+        if len(durations) > 1 and durations[-1] < min_note_duration:
+            # Merge last short note into previous note
+            durations[-2] += durations[-1]
+            pitches.pop(-1)
+            durations.pop(-1)
         return pitches, durations, ph_dur_i
     
     @staticmethod

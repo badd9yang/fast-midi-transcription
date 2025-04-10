@@ -77,5 +77,5 @@ This tool references and utilizes the following open-source projects:
 - [**Pseudo-Label Transfer from Frame-level to Note-level in a Teacher-student Framework for Singing Transcription from Polyphonic Music**](https://github.com/keums/icassp2022-vocal-transcription)
 ## License
 
-Copyright © YangChen, 2025/4/9
+It's under the MIT License. It is free for both research and commercial use cases.
 

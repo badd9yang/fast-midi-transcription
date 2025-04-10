@@ -1,6 +1,6 @@
-# Fast MIDI Transcription for Singing Voice Synthesis
+# Fast Automatic Singing Transcription for Singing Voice Synthesis
 
-This tool provides fast MIDI transcription specifically designed for singing voice synthesis. It relies on F0 extraction tools and the Montreal Forced Aligner (MFA) to identify and extract MIDI information based on F0 trajectories and MFA boundaries. Utilizing a pure post-processing algorithm without dependency on deep learning, this tool achieves a Real-Time Factor (RTF) of approximately 0.02, making it highly competitive compared to existing open-source MIDI transcription tools for singing voice synthesis.
+This tool provides fast automatic singing transcription(**AST**) specifically designed for singing voice synthesis. It relies on **F0 extraction tools** and the **Montreal Forced Aligner (MFA)** to identify and extract MIDI information based on F0 trajectories and MFA boundaries. Utilizing a pure post-processing algorithm without dependency on deep learning, this tool achieves a Real-Time Factor (RTF) of approximately 0.02, making it highly competitive compared to existing open-source MIDI transcription tools for singing voice synthesis.
 
 ![fig](./demo/out.png)
 ## Installation

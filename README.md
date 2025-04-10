@@ -2,6 +2,7 @@
 
 This tool provides fast MIDI transcription specifically designed for singing voice synthesis. It relies on F0 extraction tools and the Montreal Forced Aligner (MFA) to identify and extract MIDI information based on F0 trajectories and MFA boundaries. Utilizing a pure post-processing algorithm without dependency on deep learning, this tool achieves a Real-Time Factor (RTF) of approximately 0.02, making it highly competitive compared to existing open-source MIDI transcription tools for singing voice synthesis.
 
+(./demo/out.png)
 ## Installation
 
 ```bash

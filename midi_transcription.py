@@ -358,8 +358,9 @@ class MidiTrans:
                 pitches, durations = self._process_word_pitches(word_pitch)
                 
                 # update word level midi
-                pitches, durations, ph_dur_i = self._adjust_note_boundaries(pitches,durations,phone_duration,
-                                                                      ph_dur_start_idx,ph_dur_end_idx)
+                pitches, durations, ph_dur_i = self._adjust_note_boundaries(
+                    pitches, durations, phone_duration, ph_dur_start_idx, ph_dur_end_idx
+                )
                 midi.extend(pitches)
                 midi2word.append(len(pitches))
                 midi_dur.extend(durations)

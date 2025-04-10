@@ -279,7 +279,7 @@ class MidiTrans:
             word_duration,
             phone_duration,
             ph2word,  # [2, 2, 1, 1, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 1]
-        ) = self.process_textgrid(tg, self.frame_rate)
+        ) = self._process_textgrid(tg, self.frame_rate)
 
         num_frames = sum(word_duration)  # Total frames
         assert sum(phone_duration) == sum(
@@ -327,7 +327,7 @@ class MidiTrans:
 
         onset = np.diff(note, prepend=np.array([note[0]]))
         onset = np.where(onset != 0, 1, 0)
-        note = self.nearest_neighbor_interpolation(phone_list, phone_duration, note)
+        note = self._nearest_neighbor_interpolation(phone_list, phone_duration, note)
         start_idx = 0  # Initialize start_idx
         ph_dur_start_idx = 0
         # word level / phoneme level
@@ -355,38 +355,11 @@ class MidiTrans:
                 midi_ph_dur.extend([durations])
 
             else:
-                pitches, durations = self.process_word_pitches(word_pitch)
-
-                # Check if first phoneme duration exceeds first note duration, adjust note boundaries
-                ph_dur_i = phone_duration[ph_dur_start_idx:ph_dur_end_idx]
-                first_ph_dur = ph_dur_i[0]  # First phoneme (usually consonant) duration
-                first_note_dur = durations[0]  # First note duration
-
-                if first_ph_dur > first_note_dur:
-                    j = 0
-                    while j < len(durations) - 1:
-                        # Compare current and next note durations
-                        if durations[j] >= durations[j + 1]:
-                            # Current note is longer, merge next into current
-                            durations[j] += durations[j + 1]
-                            pitches.pop(j + 1)
-                            durations.pop(j + 1)
-                        else:
-                            # Next note is longer, merge current into next
-                            durations[j + 1] += durations[j]
-                            pitches.pop(j)
-                            durations.pop(j)
-
-                        # Check if duration requirement is met
-                        if durations[j] >= first_ph_dur:
-                            break
-
-                        # If still not enough after merging, continue
-                        if j == len(durations) - 1:
-                            # Last note, directly adjust duration
-                            durations[j] = first_ph_dur
-
+                pitches, durations = self._process_word_pitches(word_pitch)
+                
                 # update word level midi
+                pitches, durations, ph_dur_i = self._adjust_note_boundaries(pitches,durations,phone_duration,
+                                                                      ph_dur_start_idx,ph_dur_end_idx)
                 midi.extend(pitches)
                 midi2word.append(len(pitches))
                 midi_dur.extend(durations)
@@ -396,7 +369,7 @@ class MidiTrans:
                 ph_frame_midi = np.repeat(pitches, durations)
 
                 for ij in range(len(ph_dur_i_cal) - 1):
-                    _ph_frame_midi, _ph_frame_midi_dur = self.process_word_pitches(
+                    _ph_frame_midi, _ph_frame_midi_dur = self._process_word_pitches(
                         ph_frame_midi[ph_dur_i_cal[ij] : ph_dur_i_cal[ij + 1]]
                     )
                     midi_ph.extend(_ph_frame_midi)
@@ -433,9 +406,66 @@ class MidiTrans:
         data.file_name = Path(wav_path).stem
 
         return data
+    
+    def _adjust_note_boundaries(self, pitches, durations, phone_duration, ph_start_idx, ph_end_idx):
+        """
+        Adjust note boundaries to match phoneme durations and handle fragmented notes.
+        
+        Args:
+            pitches: List of MIDI pitch values
+            durations: List of note durations (in seconds)
+            phone_duration: List of phoneme durations
+            ph_start_idx: Start index of current phoneme group
+            ph_end_idx: End index of current phoneme group
+        
+        Returns:
+            Modified pitches and durations lists
+        """
+        # Extract durations for current phoneme group
+        ph_dur_i = phone_duration[ph_start_idx:ph_end_idx]
+        first_ph_dur = ph_dur_i[0]  # Duration of first phoneme (typically consonant)
+        first_note_dur = durations[0]  # Duration of first note
 
+        # Handle multi-phoneme case (consonant+vowel) where consonant needs longer duration
+        if len(ph_dur_i) > 1 and first_ph_dur > first_note_dur:
+            j = 0
+            while j < len(durations) - 1:
+                # If current note is longer than next, merge next into current
+                if durations[j] >= durations[j + 1]:
+                    durations[j] += durations[j + 1]
+                    pitches.pop(j + 1)
+                    durations.pop(j + 1)
+                else:
+                    # Otherwise merge current note into next
+                    durations[j + 1] += durations[j]
+                    pitches.pop(j)
+                    durations.pop(j)
+                
+                # Check if duration requirement is met
+                if durations[j] >= first_ph_dur:
+                    break
+                
+                # If we've reached last note, directly adjust its duration
+                if j == len(durations) - 1:
+                    durations[j] = first_ph_dur
+                    break
+        
+        # Handle single-phoneme case (vowel only) with potential pitch fluctuations/ornaments
+        min_note_duration = 0.1 / self.frame_rate  # Merge notes shorter than 100ms
+        i = 0
+        while i < len(durations) - 1:
+            if durations[i] < min_note_duration:
+                # Merge short note into next note
+                durations[i + 1] += durations[i]
+                pitches.pop(i)
+                durations.pop(i)
+            else:
+                i += 1
+        
+        return pitches, durations, ph_dur_i
+    
     @staticmethod
-    def nearest_neighbor_interpolation(phone_list, phone_duration, arr):
+    def _nearest_neighbor_interpolation(phone_list, phone_duration, arr):
         """Interpolate MIDI notes with nearest neighbor approach."""
         frame_phone_list = []
         for p, ph_d in zip(phone_list, phone_duration):
@@ -473,7 +503,7 @@ class MidiTrans:
         return interpolated_arr
 
     @staticmethod
-    def process_word_pitches(word_pitch):
+    def _process_word_pitches(word_pitch):
         """Process pitch sequence for a word, merging single-frame notes."""
         if len(word_pitch) == 0:
             return [], []
@@ -533,7 +563,7 @@ class MidiTrans:
         return pitches, durations
 
     @staticmethod
-    def process_textgrid(tg, timestep, epsilon=1e-6):
+    def _process_textgrid(tg, timestep, epsilon=1e-6):
         """Process TextGrid file to extract word and phoneme information."""
         # Assume tg[0] is word tier, tg[1] is phone tier
         words = tg[0]
@@ -794,9 +824,8 @@ class MidiTrans:
             piano.notes.append(note)
 
         piano_chord.instruments.append(piano)
-        piano_chord.write(midi_path)
+        piano_chord.write(str(midi_path))
         return piano_chord
-
 
 if __name__ == "__main__":
     # Usage example 1

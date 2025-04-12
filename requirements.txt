@@ -7,5 +7,5 @@ pretty_midi
 scipy
 textgrid
 tqdm
-parselmouth
+praat-parselmouth
 pyworld

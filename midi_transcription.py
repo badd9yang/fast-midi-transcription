@@ -703,6 +703,7 @@ class MidiTrans:
             for idx, p in enumerate(phones_in_word):
                 if p["text"].upper() in ["SP", "<SP>", "AP", "<AP>"]:
                     phone_list.append(p["text"])
+                    # TODO: 
                 else:
                     phone_list.append(p["text"])
                 phone_duration.append(phone_frames_list[idx])

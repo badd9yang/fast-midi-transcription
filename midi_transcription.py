@@ -702,7 +702,7 @@ class MidiTrans:
 
             for idx, p in enumerate(phones_in_word):
                 if p["text"].upper() in ["SP", "<SP>", "AP", "<AP>"]:
-                    phone_list.append(p["text"])
+                    phone_list.append(p["text"].upper())
                     # TODO: 
                 else:
                     phone_list.append(p["text"])
